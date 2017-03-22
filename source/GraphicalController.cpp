@@ -17,7 +17,7 @@ void GraphicalController::init(int windowWidth, int windowHeight)
 	glutInitWindowSize(windowWidth_, windowHeight);
 	glutCreateWindow(PROJECT_NAME);
 	glutSetCursor(GLUT_CURSOR_RIGHT_ARROW);
-	glClearColor(0, 0, 0, 0);
+	glClearColor(0.8, 0.8, 1, 1);
 	std::cout << "success" << std::endl;
 
 	std::cout << "Initializing GLEW... " << std::flush;

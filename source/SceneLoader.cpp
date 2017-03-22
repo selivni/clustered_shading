@@ -83,6 +83,9 @@ void SceneLoader::checkScene()
 				std::cout << 10 << ':' << num << ' ';
 			if ((num = scene_->mMaterials[i]->GetTextureCount(aiTextureType_UNKNOWN)))
 				std::cout << 11 << ':' << num << ' ';
+			if (scene_->mMaterials[i]->mNumProperties)
+				std::cout << std::endl << "Properties: "
+						  << scene_->mMaterials[i]->mNumProperties;
 		}
 	}
 	std::cout << std::endl;
