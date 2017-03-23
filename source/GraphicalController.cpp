@@ -27,14 +27,24 @@ void GraphicalController::init(int windowWidth, int windowHeight)
 	std::cout << "success" << std::endl;
 }
 
+GraphicalController::GraphicalController()
+{
+}
+
+GraphicalController::~GraphicalController()
+{
+}
+
 void GraphicalController::createMap(const aiScene* scene)
 {
+	scene_ = scene;
+
 	std::cout << "Setting camera... " << std::flush;
 	createCamera();
 	std::cout << "success" << std::endl;
 
 	std::cout << "Loading model... " << std::flush;
-	createModel(scene);
+	createModel();
 	std::cout << "success" << std::endl;
 }
 
@@ -49,7 +59,23 @@ void GraphicalController::createCamera()
 	camera.znear = 0.05f;
 }
 
-void GraphicalController::createModel(const aiScene* scene)
+std::vector<GLuint>& GraphicalController::compileShaders()
 {
-	
+	std::vector<GLuint> result;
+	for (int i = 0; i < scene_->mNumMaterials; i++)
+		result.push_back(GL::CompileShaderProgram
+			(("mat" + std::to_string(i)).data()));
+			return result;
+}
+
+std::pair<GLuint, GLuint> GraphicalController::loadMesh(int i)
+{
+	std::pair<GLuint, GLuint>
+}
+
+void GraphicalController::createModel()
+{
+	std::vector<GLuint> shaders = compileShaders(scene_);
+	for (int i = 0; i < scene_->nNumMeshes; i++)
+		meshes_.push_back(loadMesh(i));
 }
