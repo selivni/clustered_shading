@@ -11,6 +11,7 @@ int main()
 		loader.load(SPONZA_OBJ);
 		graphics.init(WINDOWWIDTH_DEFAULT, WINDOWHEIGHT_DEFAULT);
 		graphics.createMap(loader.scene());
+		graphics.startLoop();
 		return EXIT_SUCCESS;
 	}
 	catch (std::invalid_argument error)

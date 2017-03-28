@@ -5,7 +5,6 @@ SceneLoader::SceneLoader(): scene_(nullptr)
 
 void SceneLoader::load(const std::string& path)
 {
-	Assimp::Importer importer;
 	std::cout << "Reading model file "
 			  << path << ". . . " << std::flush;
 	scene_ = importer.ReadFile(path, 
@@ -95,19 +94,19 @@ void SceneLoader::checkScene()
 	if (scene_->HasMeshes())
 	{
 		std::cout << ", " << scene_->mNumMeshes;
-		int sumBones = 0;
 		int sumFaces = 0;
-		int sumVertices = 0;
+		int sumNormals = 0;
 		for (uint i = 0; i < scene_->mNumMeshes; i++)
 		{
-			sumBones += scene_->mMeshes[i]->mNumBones;
-			sumFaces += scene_->mMeshes[i]->mNumFaces;
-			sumVertices += scene_->mMeshes[i]->mNumVertices;
+			if (scene_->mMeshes[i]->HasFaces())
+				sumFaces++;
+			if (scene_->mMeshes[i]->HasNormals())
+				sumNormals++;
 		}
-			std::cout << "\nBones: "
-			<< sumBones << "\nFaces: "
-			<< sumFaces << "\nVerticles: "
-			<< sumVertices;
+		std::cout << "\nFaces: "
+			<< sumFaces << '/' << scene_->mNumMeshes << "\nVertices: "
+			<< sumFaces << '/' << scene_->mNumMeshes << "\nNormals: "
+			<< sumNormals << '/' << scene_->mNumMeshes;
 	}
 	std::cout << std::endl;
 

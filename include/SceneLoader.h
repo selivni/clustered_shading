@@ -20,6 +20,8 @@ public:
 	SceneLoader();
 private:
 	const aiScene* scene_;
+	Assimp::Importer importer;
+
 	void checkScene();
 	std::string boolToStr(bool);
 };
