@@ -131,22 +131,25 @@ void GraphicalController::display()
 {
 	glEnable(GL_DEPTH_TEST); CHECK_GL_ERRORS
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); CHECK_GL_ERRORS
+	glUseProgram(sponzaShader_); CHECK_GL_ERRORS
+	GLint cameraLocation =
+		glGetUniformLocation(sponzaShader_, "camera"); CHECK_GL_ERRORS
+	GLint materialIndexLocation =
+		glGetUniformLocation(sponzaShader_, "material"); CHECK_GL_ERRORS
+	glUniformMatrix4fv(cameraLocation, 1, GL_TRUE,
+		camera_.getMatrix().data().data()); CHECK_GL_ERRORS
 	for (uint i = 0; i < scene_->mNumMaterials; i++)
 	{
-		ShaderInfo shader = shaders_[i];
-		glUseProgram(shader.first); CHECK_GL_ERRORS
-		GLuint cameraLocation = glGetUniformLocation(shader.first, "camera"); CHECK_GL_ERRORS
-		glUniformMatrix4fv(cameraLocation, 1, GL_TRUE,
-			camera_.getMatrix().data().data()); CHECK_GL_ERRORS
-		for (VAOs::iterator iter = shader.second.begin();
-			 iter != shader.second.end();
+		MaterialInfo material = materials_[i];
+		glUniform1ui(materialIndexLocation, material.first);
+		for (VAOs::iterator iter = material.second.begin();
+			 iter != material.second.end();
 			 iter++)
 		{
 			glBindVertexArray(iter->first); CHECK_GL_ERRORS
 			glDrawElements(GL_TRIANGLES, iter->second, GL_UNSIGNED_INT, 0); CHECK_GL_ERRORS
 			glBindVertexArray(0); CHECK_GL_ERRORS
 		}
-		glUseProgram(0); CHECK_GL_ERRORS
 	}
 	glutSwapBuffers(); CHECK_GL_ERRORS
 }
@@ -195,7 +198,14 @@ void GraphicalController::createCamera()
 
 void GraphicalController::compileShaders()
 {
-	
+	sponzaShader_ = GL::CompileShaderProgram("sponza");
+		CHECK_GL_ERRORS
+	for (uint i = 0; i < scene_->mNumMaterials; i++)
+	{
+		VAOs listVAO;
+		MaterialInfo info(i, listVAO);
+		materials_.push_back(info);
+	}
 /*
 	for (uint i = 0; i < scene_->mNumMaterials; i++)
 	{
@@ -236,7 +246,7 @@ std::vector<unsigned int> GraphicalController::concatFaces(aiMesh* mesh)
 MeshInfo GraphicalController::loadMesh(int i, uint& length)
 {
 	std::pair<GLuint, int> result;
-	uint shader = scene_->mMeshes[i]->mMaterialIndex;
+	uint material = scene_->mMeshes[i]->mMaterialIndex;
 	glGenVertexArrays(1, &result.first);
 	glBindVertexArray(result.first);
 
@@ -248,7 +258,7 @@ MeshInfo GraphicalController::loadMesh(int i, uint& length)
 	glBindBuffer(GL_ARRAY_BUFFER, vertBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(aiVector3D) * vertLength,
 				 vertices, GL_STATIC_DRAW); CHECK_GL_ERRORS
-	GLuint vertLocation = glGetAttribLocation(shaders_[shader].first, "point"); CHECK_GL_ERRORS
+	GLuint vertLocation = glGetAttribLocation(sponzaShader_, "point"); CHECK_GL_ERRORS
 	glEnableVertexAttribArray(vertLocation); CHECK_GL_ERRORS
 	glVertexAttribPointer(vertLocation, 3, GL_FLOAT, GL_FALSE, 0, 0); CHECK_GL_ERRORS
 
@@ -263,7 +273,7 @@ MeshInfo GraphicalController::loadMesh(int i, uint& length)
 
 	glBindVertexArray(0);
 	
-	result.second = shader;
+	result.second = material;
 	return result;
 }
 
@@ -277,9 +287,9 @@ void GraphicalController::checkInfo()
 	std::cout << "Checking what's loaded:" << std::endl;
 	for (uint i = 0; i < scene_->mNumMaterials; i++)
 	{
-		std::cout << shaders_[i].first << ": ";
-		for (VAOs::iterator iter = shaders_[i].second.begin();
-			 iter != shaders_[i].second.end();
+		std::cout << materials_[i].first << ": ";
+		for (VAOs::iterator iter = materials_[i].second.begin();
+			 iter != materials_[i].second.end();
 			 iter++)
 		{
 			std::cout << iter->first << ' ';
@@ -297,7 +307,7 @@ void GraphicalController::createModel()
 		MeshInfo meshInfo = loadMesh(i, length);
 		uint index = meshInfo.second;
 		meshInfo.second = length;
-		shaders_[index].second.push_back(meshInfo);
+		materials_[index].second.push_back(meshInfo);
 	}
 	#ifdef GRAPHICALCONTROLLER_M_DEBUG
 	checkInfo();

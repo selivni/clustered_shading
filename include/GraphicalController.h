@@ -44,6 +44,8 @@ private:
 
 	std::vector<MaterialInfo> materials_;
 
+	GLuint sponzaShader_;
+
 	void createCamera();
 	void compileShaders();
 	std::vector<unsigned int> concatFaces(aiMesh*);
