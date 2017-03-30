@@ -6,11 +6,13 @@ set (CMAKE_BINARY_DIR "${PROJECT_SOURCE_DIR}/build")
 set (SOURCE_ROOT "${PROJECT_SOURCE_DIR}/source")
 set (INCLUDE_ROOT "${PROJECT_SOURCE_DIR}/include")
 set (SO_ROOT "${PROJECT_SOURCE_DIR}/shared")
+set (ASSIMP_ROOT "${SO_ROOT}/assimp")
+set (DEVIL_ROOT "${SO_ROOT}/DevIL")
 set (MODEL_ROOT "${PROJECT_SOURCE_DIR}/model")
 set (GLM_ROOT "${PROJECT_SOURCE_DIR}/lib/glm")
 set (UTILITY_ROOT "${PROJECT_SOURCE_DIR}/lib/Utility")
 
-link_directories(${SO_ROOT})
+link_directories(${ASSIMP_ROOT} ${DEVIL_ROOT})
 file (GLOB SOURCES "${SOURCE_ROOT}/*.cpp")
 file (GLOB UTILITY_LIBRARIES "${UTILITY_ROOT}/obj/*.o")
 
@@ -28,7 +30,8 @@ find_package(GLUT REQUIRED)
 find_package(OpenGL REQUIRED)
 
 include_directories(${INCLUDE_ROOT} 
-					"${SO_ROOT}/include"
+					"${ASSIMP_ROOT}/include"
+					"${DEVIL_ROOT}/include"
 					"${UTILITY_ROOT}/include"
 					"${UTILITY_ROOT}/include/GL"
 					"${UTILITY_ROOT}/include/VM"
@@ -36,7 +39,10 @@ include_directories(${INCLUDE_ROOT}
 					${GLUT_INCLUDE_DIR}
 					${OPENGL_INCLUDE_DIR})
 
-target_link_libraries(${PROJECT_NAME} "${SO_ROOT}/libassimp.so")
+target_link_libraries(${PROJECT_NAME} "${ASSIMP_ROOT}/libassimp.so")
+target_link_libraries(${PROJECT_NAME} "${DEVIL_ROOT}/libIL.so")
+target_link_libraries(${PROJECT_NAME} "${DEVIL_ROOT}/libILU.so")
+target_link_libraries(${PROJECT_NAME} "${DEVIL_ROOT}/libILUT.so")
 target_link_libraries(${PROJECT_NAME} ${UTILITY_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} ${GLEW_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} ${GLUT_glut_LIBRARY})

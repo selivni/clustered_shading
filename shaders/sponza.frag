@@ -63,5 +63,5 @@ void main()
 	else if (material == uint(27))
 		outColor = vec4(1, 1, 0, 1);
 	else
-		outColor = vec4(1, 0, 0,1);
+		outColor = vec4(1, 0, 0, 1);
 }

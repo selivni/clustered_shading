@@ -47,6 +47,7 @@ private:
 	GLuint sponzaShader_;
 
 	void createCamera();
+	void loadTextures();
 	void compileShaders();
 	std::vector<unsigned int> concatFaces(aiMesh*);
 	MeshInfo loadMesh(int, uint&);

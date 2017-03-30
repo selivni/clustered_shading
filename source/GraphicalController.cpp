@@ -13,7 +13,8 @@ void GraphicalController::init(int windowWidth, int windowHeight)
 	argv[0] = name;
 	std::cout << "Initializing GLUT... " << std::flush;
 	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
+	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE |
+						GLUT_DEPTH | GLUT_MULTISAMPLE);
 	glutInitContextVersion(3, 3);
 	glutInitWindowPosition(-1, -1);
 	glutInitWindowSize(windowWidth_, windowHeight);
@@ -141,7 +142,8 @@ void GraphicalController::display()
 	for (uint i = 0; i < scene_->mNumMaterials; i++)
 	{
 		MaterialInfo material = materials_[i];
-		glUniform1ui(materialIndexLocation, material.first);
+		GLuint materialIndex = i;
+		glUniform1ui(materialIndexLocation, materialIndex);
 		for (VAOs::iterator iter = material.second.begin();
 			 iter != material.second.end();
 			 iter++)
@@ -192,8 +194,13 @@ void GraphicalController::createCamera()
 	camera_.position = VM::vec3(0, 0.5, -0.5);
 	camera_.screenRatio = static_cast<float>(windowWidth_) / windowHeight_;
 	camera_.up = VM::vec3(0, 1, 0);
-	camera_.zfar = 10000.0f;
-	camera_.znear = 0.05f;
+	camera_.zfar = 3000.0f;
+	camera_.znear = 5.0f;
+}
+
+void GraphicalController::loadTextures()
+{
+	
 }
 
 void GraphicalController::compileShaders()
