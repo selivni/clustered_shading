@@ -1,6 +1,7 @@
 #pragma once
 
 #define SCENELOADER_M_DEBUG
+#undef SCENELOADER_M_DEBUG
 
 #include <stdexcept>
 #include <iostream>
