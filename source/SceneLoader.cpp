@@ -74,14 +74,16 @@ void SceneLoader::checkScene()
 				std::cout << 6 << ':' << num << ' ';
 			if ((num = scene_->mMaterials[i]->GetTextureCount(aiTextureType_SHININESS)))
 				std::cout << 7 << ':' << num << ' ';
-			if ((num = scene_->mMaterials[i]->GetTextureCount(aiTextureType_DISPLACEMENT)))
+			if ((num = scene_->mMaterials[i]->GetTextureCount(aiTextureType_OPACITY)))
 				std::cout << 8 << ':' << num << ' ';
-			if ((num = scene_->mMaterials[i]->GetTextureCount(aiTextureType_LIGHTMAP)))
+			if ((num = scene_->mMaterials[i]->GetTextureCount(aiTextureType_DISPLACEMENT)))
 				std::cout << 9 << ':' << num << ' ';
-			if ((num = scene_->mMaterials[i]->GetTextureCount(aiTextureType_REFLECTION)))
+			if ((num = scene_->mMaterials[i]->GetTextureCount(aiTextureType_LIGHTMAP)))
 				std::cout << 10 << ':' << num << ' ';
-			if ((num = scene_->mMaterials[i]->GetTextureCount(aiTextureType_UNKNOWN)))
+			if ((num = scene_->mMaterials[i]->GetTextureCount(aiTextureType_REFLECTION)))
 				std::cout << 11 << ':' << num << ' ';
+			if ((num = scene_->mMaterials[i]->GetTextureCount(aiTextureType_UNKNOWN)))
+				std::cout << 12 << ':' << num << ' ';
 			if (scene_->mMaterials[i]->mNumProperties)
 				std::cout << std::endl << "Properties: "
 						  << scene_->mMaterials[i]->mNumProperties;

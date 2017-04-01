@@ -1,6 +1,10 @@
 #pragma once
 
 #define GRAPHICALCONTROLLER_M_DEBUG
+#define GRAPHICALCONTROLLER_M_DEBUG_SUPER
+#undef GRAPHICALCONTROLLER_M_DEBUG_SUPER
+
+#include <stdio.h>
 
 #include <iostream>
 #include <vector>
@@ -9,12 +13,14 @@
 #include "scene.h"
 #include "vector3.h"
 #include "Utility.h"
-//GLuint - VAO, int - index in shaders_
+#include "SOIL.h"
+
+//GLuint - VAO, uint - mesh vertices count
 typedef std::pair<GLuint, uint> MeshInfo;
-//GLuint - VAO, int - index in mMeshes
+
 typedef std::list<MeshInfo> VAOs;
-//GLuint - shader index; list<GLuint> - meshes VAO's
-typedef std::pair<GLuint, VAOs> MaterialInfo;
+//GLuint - texture index; VAOs - meshes VAO's
+typedef std::pair<GLuint[2], VAOs> MaterialInfo;
 
 class GraphicalController
 {
@@ -35,19 +41,32 @@ private:
 	int windowWidth_;
 	int windowHeight_;
 
-	bool mouseCaptured;
+	bool mouseCaptured_;
 	void toggleMouse();
 
 	const aiScene* scene_;
 
 	GL::Camera camera_;
 
+	std::vector<GLuint> textures_;
+	GLuint texturesCount_;
+	GLuint opacityTexCount_;
+	GLuint opTexPointer_;
 	std::vector<MaterialInfo> materials_;
 
-	GLuint sponzaShader_;
+	GLuint sponzaShaderOne_;
+	GLuint sponzaShaderTwo_;
+
+	int lastTime_;
+	unsigned int frameCounter_;
 
 	void createCamera();
+	void updateFPS();
+	void prepareTextures(GLuint);
+	void unprepareTextures();
+	void prepareProgram(GLuint);
 	void loadTextures();
+	bool loadTexture(const char*, GLuint&);
 	void compileShaders();
 	std::vector<unsigned int> concatFaces(aiMesh*);
 	MeshInfo loadMesh(int, uint&);
