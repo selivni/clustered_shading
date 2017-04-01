@@ -233,24 +233,36 @@ void GraphicalController::updateFPS()
 void GraphicalController::display()
 {
 	glEnable(GL_DEPTH_TEST); CHECK_GL_ERRORS
-	glEnable(GL_BLEND); CHECK_GL_ERRORS
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//	glEnable(GL_BLEND); CHECK_GL_ERRORS
+//	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_CULL_FACE);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); CHECK_GL_ERRORS
 	updateFPS();
 	GLint cameraLocationOne =
 		glGetUniformLocation(sponzaShaderOne_, "camera"); CHECK_GL_ERRORS
 	GLint materialIndexLocationOne =
 		glGetUniformLocation(sponzaShaderOne_, "material"); CHECK_GL_ERRORS
+	GLint cameraPosLocOne =
+		glGetUniformLocation(sponzaShaderOne_, "cameraPosition");
+			CHECK_GL_ERRORS
 
 	GLint cameraLocationTwo =
 		glGetUniformLocation(sponzaShaderTwo_, "camera"); CHECK_GL_ERRORS
 	GLint materialIndexLocationTwo =
 		glGetUniformLocation(sponzaShaderTwo_, "material"); CHECK_GL_ERRORS
+	GLint cameraPosLocTwo =
+		glGetUniformLocation(sponzaShaderTwo_, "cameraPosition");
+			CHECK_GL_ERRORS
 
 	glUseProgram(sponzaShaderOne_); CHECK_GL_ERRORS
 	prepareProgram(sponzaShaderOne_);
 	glUniformMatrix4fv(cameraLocationOne, 1, GL_TRUE,
 		camera_.getMatrix().data().data()); CHECK_GL_ERRORS
+	GLfloat camPos[3];
+	camPos[0] = camera_.position.x;
+	camPos[1] = camera_.position.y;
+	camPos[2] = camera_.position.z;
+	glUniform3fv(cameraPosLocOne, 1, camPos);
 
 	for (uint i = 0; i < scene_->mNumMaterials; i++)
 	{
@@ -266,6 +278,10 @@ void GraphicalController::display()
 			prepareProgram(sponzaShaderTwo_);
 			glUniformMatrix4fv(cameraLocationTwo, 1, GL_TRUE,
 				camera_.getMatrix().data().data()); CHECK_GL_ERRORS
+			camPos[0] = camera_.position.x;
+			camPos[1] = camera_.position.y;
+			camPos[2] = camera_.position.z;
+			glUniform3fv(cameraPosLocTwo, 1, camPos);
 		}
 		glUniform1ui(materialIndexLocation, materialIndex);
 		for (VAOs::iterator iter = material.second.begin();
@@ -319,7 +335,7 @@ void GraphicalController::createCamera()
 {
 	camera_.angle = 45.0f / 180.0f * M_PI;
 	camera_.direction = VM::vec3(0, 0.3, -1);
-	camera_.position = VM::vec3(0, 0.5, -0.5);
+	camera_.position = VM::vec3(0, 100, 0);
 	camera_.screenRatio = static_cast<float>(windowWidth_) / windowHeight_;
 	camera_.up = VM::vec3(0, 1, 0);
 	camera_.zfar = 10000.0f;
@@ -463,7 +479,7 @@ MeshInfo GraphicalController::loadMesh(int i, uint& length)
 	std::pair<GLuint, int> result;
 	GLuint shader;
 	uint material = scene_->mMeshes[i]->mMaterialIndex;
-	if (material > 14)
+	if (material >= 14)
 		shader = sponzaShaderTwo_;
 	else
 		shader = sponzaShaderOne_;
@@ -493,6 +509,20 @@ MeshInfo GraphicalController::loadMesh(int i, uint& length)
 	GLuint uvLocation = glGetAttribLocation(shader, "uvCoord"); CHECK_GL_ERRORS
 	glEnableVertexAttribArray(uvLocation); CHECK_GL_ERRORS
 	glVertexAttribPointer(uvLocation, 3, GL_FLOAT, GL_FALSE, 0, 0); CHECK_GL_ERRORS
+
+	GLuint normBuffer;
+	aiVector3D* norm = scene_->mMeshes[i]->mNormals;
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glGenBuffers(1, &normBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, normBuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(aiVector3D) * vertLength,
+				 norm, GL_STATIC_DRAW); CHECK_GL_ERRORS
+	GLuint normLocation = glGetAttribLocation(shader, "normal");
+		CHECK_GL_ERRORS
+	glEnableVertexAttribArray(normLocation); CHECK_GL_ERRORS
+	glVertexAttribPointer(normLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		CHECK_GL_ERRORS
 
 	GLuint facesBuffer;
 	std::vector<unsigned int> faces = concatFaces(scene_->mMeshes[i]);

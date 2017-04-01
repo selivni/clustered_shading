@@ -9,7 +9,7 @@ void CompileShader(const std::string &name, GLuint &shader, GLenum shaderType) {
     std::string source = LoadSource(name);
 
     //Compile vertex shader
-    char *src = new char[source.size()];
+    char *src = new char[source.size() + 1];
     sprintf(src, "%s", source.c_str());
     int sourceLength = source.size();
 

@@ -1,5 +1,5 @@
 CXX			= g++
-CFLAGS 		= -Wall -std=c++11 -O2
+CFLAGS 		= -Wall -g -std=c++11 -O2
 TARGET 		= Utilitylib
 
 INCL_DIRS	= include include/GL include/VM
