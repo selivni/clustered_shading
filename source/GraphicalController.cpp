@@ -1,6 +1,96 @@
 #include "GraphicalController.h"
 #include "PointerGraphicalController.h"
 
+
+const aiVector3D lightsArray::waypoint[]=
+{
+	aiVector3D(1120, 250, -450),
+	aiVector3D(-1200, 250, -450),
+	aiVector3D(-1200, 250, 400),
+	aiVector3D(1120, 250, 400),
+	aiVector3D(832, 110, -220),
+	aiVector3D(115, 484, 104),
+	aiVector3D(-12, 617, -466),
+	aiVector3D(-1246, 615, -431),
+	aiVector3D(-1196, 627, -139),
+	aiVector3D(-112, 1241, -42),
+	aiVector3D(1117, 141, -32)/*,
+	aiVector3D(),
+	aiVector3D(),
+	aiVector3D(),
+	aiVector3D(),
+	aiVector3D(),
+	aiVector3D(),
+	aiVector3D(),*/
+};
+
+LightsArray::LightsArray()
+{
+	VAO = 0;
+	quantity = 0;
+	stepNumber = 0;
+}
+
+void LightsArray::create(int _quantity)
+{
+	if (quantity > sizeof(waypoint) / sizeof(aiVector3D))
+		throw std::invalid_argument("Error: can't create that many"
+									" spheres unless you provide more"
+									" positions");
+	quantity = _quantity;
+	for (unsigned int i = 0; i < quantity; i++)
+	{
+		srand(time());
+		position.push_back(waypoint[i]);
+		radius.push_back(50 + 50 * static_cast<GLfloat>(rand()) / RAND_MAX);
+		color.push_back(aiVector3D(static_cast<GLfloat>(rand()) / RAND_MAX,
+						static_cast<GLfloat>(rand()) / RAND_MAX,
+						static_cast<GLfloat>(rand()) / RAND_MAX);	
+	}
+}
+
+const unsigned int Sphere::DIVISION_FIRST = 40;
+const unsigned int Sphere::DIVISION_SECOND = 20;
+
+Sphere::createLine(double first, double second, double offset)
+{
+	for (unsigned int i = 0; i < DIVISION_SECOND; i++)
+	{
+		double angle = i * M_PI * 2 / DIVISION_SECOND + offset;
+		double halfStep = M_PI / DIVISION_SECOND / 2;
+		aiVector3D vertexOne(cos(angle) * cos(first),
+							 sin(first),
+							 sin(angle) * cos(first));
+		angle += halfStep;
+		aiVector3D vertexTwo(cos(angle) * cos(second),
+							 sin(second),
+							 sin(angle) * cos(second));
+		vertices_.push_back(vertexOne);
+		vertices_.push_back(vertexTwo);
+	}
+}
+
+Sphere::Sphere()
+{
+	const double halfStep = M_PI / DIVISION_SECOND / 2;
+	double offset = halfStep;
+	for (int i = 0; i < DIVISION_FIRST; i++)
+	{
+		if (offset != 0)
+			offset = 0;
+		else
+			offset = halfStep;
+			
+		createLine(-M_PI / 2 + (M_PI / DIVISION_FIRST) * i,
+				   -M_PI / 2 + (M_PI / DIVISION_SECOND) * (i + 1), offset);
+	}
+}
+
+const std::vector<aiVector3D> Sphere::getMesh()
+{
+	return &vertices_;
+}
+
 void GraphicalController::init(int windowWidth, int windowHeight)
 {
 	windowWidth_ = windowWidth;
@@ -230,11 +320,14 @@ void GraphicalController::updateFPS()
 	lastTime_ = currentTime;
 }
 
-void GraphicalController::display()
+void GraphicalController::drawLights()
+{
+	
+}
+
+void GraphicalController::drawSponza()
 {
 	glEnable(GL_DEPTH_TEST); CHECK_GL_ERRORS
-//	glEnable(GL_BLEND); CHECK_GL_ERRORS
-//	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_CULL_FACE);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); CHECK_GL_ERRORS
 	updateFPS();
@@ -295,6 +388,18 @@ void GraphicalController::display()
 		}
 	}
 	unprepareTextures();
+}
+
+void GraphicalController::updateLights()
+{
+	
+}
+
+void GraphicalController::display()
+{
+	updateLights();
+	drawLights();
+	drawSponza();
 	glutSwapBuffers(); CHECK_GL_ERRORS
 }
 
@@ -327,6 +432,11 @@ void GraphicalController::createMap(const aiScene* scene)
 	std::cout << "Loading model... " << std::flush;
 	createModel();
 	std::cout << "success" << std::endl;
+
+	std::cout << "Creating lights... " << std::flush;
+	createLights();
+	std::cout << "success" << std::endl;
+
 	frameCounter_ = 0;
 	lastTime_ = glutGet(GLUT_ELAPSED_TIME);
 }
@@ -576,4 +686,13 @@ void GraphicalController::createModel()
 	#ifdef GRAPHICALCONTROLLER_M_DEBUG_SUPER
 	checkInfo();
 	#endif
+}
+
+
+
+void GraphicalController::createLights()
+{
+	Sphere sphere;
+	const std::vector<aiVector3D>* mesh = sphere.getMesh();
+	
 }

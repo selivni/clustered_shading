@@ -4,11 +4,13 @@
 #define GRAPHICALCONTROLLER_M_DEBUG_SUPER
 #undef GRAPHICALCONTROLLER_M_DEBUG_SUPER
 
-#include <stdio.h>
-
+#include <stdlib.h>
 #include <iostream>
 #include <vector>
 #include <list>
+#include <cmath>
+#include <ctime>
+
 
 #include "scene.h"
 #include "vector3.h"
@@ -21,6 +23,37 @@ typedef std::pair<GLuint, uint> MeshInfo;
 typedef std::list<MeshInfo> VAOs;
 //GLuint - texture index; VAOs - meshes VAO's
 typedef std::pair<GLuint[2], VAOs> MaterialInfo;
+
+struct LightsArray
+{
+	static const aiVector3D waypoint[];
+
+	lightsArray();
+	GLuint VAO;
+	int quantity;
+	std::vector<aiVector3D> position;
+	std::vector<GLfloat> radius;
+	std::vector<aiVector3D> color;
+	void step();
+	void create(int);
+private:
+	int stepNumber;
+};
+
+class Sphere
+{
+public:
+	static const unsigned int DIVISION_FIRST;
+	static const unsigned int DIVISION_SECOND;
+
+	Sphere();
+	const std::vector<aiVector3D>* getMesh();
+private:
+	void createLine(double, double, double);
+
+	std::vector<aiVector3D> vertices_;
+	std::vector<GLuint> indices_;
+}
 
 class GraphicalController
 {
@@ -60,17 +93,24 @@ private:
 	int lastTime_;
 	unsigned int frameCounter_;
 
+	void updateLights();
+
 	void createCamera();
 	void updateFPS();
 	void prepareTextures(GLuint);
 	void unprepareTextures();
 	void prepareProgram(GLuint);
+
+	void drawLights();
+	void drawSponza();
+
 	void loadTextures();
 	bool loadTexture(const char*, GLuint&);
 	void compileShaders();
 	std::vector<unsigned int> concatFaces(aiMesh*);
 	MeshInfo loadMesh(int, uint&);
 	void checkInfo();
+	void createLights();
 	void createModel();
 };
 //openGL forbids passing pointers to functions that are class members
