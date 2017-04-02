@@ -26,18 +26,21 @@ typedef std::pair<GLuint[2], VAOs> MaterialInfo;
 
 struct LightsArray
 {
-	static const aiVector3D waypoint[];
+	static const VM::vec3 waypoint[];
+	static const int wpSize;
+	static const unsigned int FRAMES;
 
-	lightsArray();
+	LightsArray();
 	GLuint VAO;
-	int quantity;
-	std::vector<aiVector3D> position;
+	unsigned int quantity;
+	std::vector<VM::vec3> position;
 	std::vector<GLfloat> radius;
-	std::vector<aiVector3D> color;
+	std::vector<VM::vec3> color;
 	void step();
-	void create(int);
+	void create(unsigned int);
 private:
-	int stepNumber;
+	unsigned int counter;
+	unsigned int stepNumber;
 };
 
 class Sphere
@@ -53,7 +56,7 @@ private:
 
 	std::vector<aiVector3D> vertices_;
 	std::vector<GLuint> indices_;
-}
+};
 
 class GraphicalController
 {
@@ -89,10 +92,12 @@ private:
 
 	GLuint sponzaShaderOne_;
 	GLuint sponzaShaderTwo_;
+	GLuint sphereShader_;
 
 	int lastTime_;
 	unsigned int frameCounter_;
 
+	LightsArray lights_;
 	void updateLights();
 
 	void createCamera();

@@ -2,57 +2,79 @@
 #include "PointerGraphicalController.h"
 
 
-const aiVector3D lightsArray::waypoint[]=
+const VM::vec3 LightsArray::waypoint[]=
 {
-	aiVector3D(1120, 250, -450),
-	aiVector3D(-1200, 250, -450),
-	aiVector3D(-1200, 250, 400),
-	aiVector3D(1120, 250, 400),
-	aiVector3D(832, 110, -220),
-	aiVector3D(115, 484, 104),
-	aiVector3D(-12, 617, -466),
-	aiVector3D(-1246, 615, -431),
-	aiVector3D(-1196, 627, -139),
-	aiVector3D(-112, 1241, -42),
-	aiVector3D(1117, 141, -32)/*,
-	aiVector3D(),
-	aiVector3D(),
-	aiVector3D(),
-	aiVector3D(),
-	aiVector3D(),
-	aiVector3D(),
-	aiVector3D(),*/
+	VM::vec3(1120, 250, -450),
+	VM::vec3(-1200, 250, -450),
+	VM::vec3(-1200, 250, 400),
+	VM::vec3(1120, 250, 400),
+	VM::vec3(832, 110, -220),
+	VM::vec3(115, 484, 104),
+	VM::vec3(-12, 617, -466),
+	VM::vec3(-1246, 615, -431),
+	VM::vec3(-1196, 627, -139),
+	VM::vec3(-112, 1241, -42),
+	VM::vec3(1117, 141, -32)/*,
+	VM::vec3(),
+	VM::vec3(),
+	VM::vec3(),
+	VM::vec3(),
+	VM::vec3(),
+	VM::vec3(),
+	VM::vec3(),*/
 };
+
+const int LightsArray::wpSize = sizeof(waypoint) / sizeof(aiVector3D);
+
+const unsigned int LightsArray::FRAMES = 60;
 
 LightsArray::LightsArray()
 {
 	VAO = 0;
 	quantity = 0;
 	stepNumber = 0;
+	counter = 0;
 }
 
-void LightsArray::create(int _quantity)
+void LightsArray::create(unsigned int _quantity)
 {
-	if (quantity > sizeof(waypoint) / sizeof(aiVector3D))
+	if (_quantity > sizeof(waypoint) / sizeof(VM::vec3))
 		throw std::invalid_argument("Error: can't create that many"
 									" spheres unless you provide more"
 									" positions");
 	quantity = _quantity;
 	for (unsigned int i = 0; i < quantity; i++)
 	{
-		srand(time());
+		srand(time(NULL));
 		position.push_back(waypoint[i]);
 		radius.push_back(50 + 50 * static_cast<GLfloat>(rand()) / RAND_MAX);
-		color.push_back(aiVector3D(static_cast<GLfloat>(rand()) / RAND_MAX,
+		color.push_back(VM::vec3(static_cast<GLfloat>(rand()) / RAND_MAX,
 						static_cast<GLfloat>(rand()) / RAND_MAX,
-						static_cast<GLfloat>(rand()) / RAND_MAX);	
+						static_cast<GLfloat>(rand()) / RAND_MAX));	
+	}
+}
+
+void LightsArray::step()
+{
+	for (unsigned int i = 0; i < quantity; i++)
+	{
+		VM::vec3 src = waypoint[(i + stepNumber) % wpSize];
+		VM::vec3 dest = waypoint[(i + 1 + stepNumber) % wpSize];
+		VM::vec3 newPos = (dest - src) * counter / FRAMES + src;
+		position[i] = newPos;
+	}
+	counter++;
+	if (counter == FRAMES)
+	{
+		counter = 0;
+		stepNumber = (stepNumber + 1) % wpSize;
 	}
 }
 
 const unsigned int Sphere::DIVISION_FIRST = 40;
 const unsigned int Sphere::DIVISION_SECOND = 20;
 
-Sphere::createLine(double first, double second, double offset)
+void Sphere::createLine(double first, double second, double offset)
 {
 	for (unsigned int i = 0; i < DIVISION_SECOND; i++)
 	{
@@ -74,7 +96,7 @@ Sphere::Sphere()
 {
 	const double halfStep = M_PI / DIVISION_SECOND / 2;
 	double offset = halfStep;
-	for (int i = 0; i < DIVISION_FIRST; i++)
+	for (unsigned int i = 0; i < DIVISION_FIRST; i++)
 	{
 		if (offset != 0)
 			offset = 0;
@@ -86,7 +108,7 @@ Sphere::Sphere()
 	}
 }
 
-const std::vector<aiVector3D> Sphere::getMesh()
+const std::vector<aiVector3D>* Sphere::getMesh()
 {
 	return &vertices_;
 }
@@ -688,11 +710,17 @@ void GraphicalController::createModel()
 	#endif
 }
 
-
-
 void GraphicalController::createLights()
 {
 	Sphere sphere;
 	const std::vector<aiVector3D>* mesh = sphere.getMesh();
-	
+	lights_.create(10);
+	sphereShader_ = GL::CompileShaderProgram("sphere");
+	glGenVertexArrays(1, &lights_.VAO);
+	glBindVertexArray(&lights_.VAO);
+
+	GLuint meshBuffer;
+	glGenBuffers(1, &meshBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, &meshBuffer);
+	glBufferData()
 }
