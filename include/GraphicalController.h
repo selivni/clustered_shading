@@ -32,6 +32,9 @@ struct LightsArray
 
 	LightsArray();
 	GLuint VAO;
+	GLuint positionBuffer;
+	GLuint radiusBuffer;
+	GLuint colorBuffer;
 	unsigned int quantity;
 	std::vector<VM::vec3> position;
 	std::vector<GLfloat> radius;
@@ -53,6 +56,7 @@ public:
 	const std::vector<aiVector3D>* getMesh();
 private:
 	void createLine(double, double, double);
+	void postprocess();
 
 	std::vector<aiVector3D> vertices_;
 	std::vector<GLuint> indices_;
@@ -89,6 +93,8 @@ private:
 	GLuint opacityTexCount_;
 	GLuint opTexPointer_;
 	std::vector<MaterialInfo> materials_;
+
+	unsigned int sphereMeshSize_;
 
 	GLuint sponzaShaderOne_;
 	GLuint sponzaShaderTwo_;

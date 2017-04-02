@@ -17,5 +17,5 @@ void main()
 	norm = normal;
 	uv = uvCoord;
 	cameraVector = cameraPosition - point;
-	gl_Position = 0.001 * camera * finalPoint;
+	gl_Position = camera * finalPoint;
 }

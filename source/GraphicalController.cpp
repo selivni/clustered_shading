@@ -28,12 +28,11 @@ const int LightsArray::wpSize = sizeof(waypoint) / sizeof(aiVector3D);
 
 const unsigned int LightsArray::FRAMES = 60;
 
-LightsArray::LightsArray()
+LightsArray::LightsArray(): VAO(0), positionBuffer(0), radiusBuffer(0),
+							colorBuffer(0), quantity(0), counter(0),
+							stepNumber(0)
 {
-	VAO = 0;
-	quantity = 0;
-	stepNumber = 0;
-	counter = 0;
+
 }
 
 void LightsArray::create(unsigned int _quantity)
@@ -43,11 +42,11 @@ void LightsArray::create(unsigned int _quantity)
 									" spheres unless you provide more"
 									" positions");
 	quantity = _quantity;
+	srand(time(NULL));
 	for (unsigned int i = 0; i < quantity; i++)
 	{
-		srand(time(NULL));
 		position.push_back(waypoint[i]);
-		radius.push_back(50 + 50 * static_cast<GLfloat>(rand()) / RAND_MAX);
+		radius.push_back(10 + 50 * static_cast<GLfloat>(rand()) / RAND_MAX);
 		color.push_back(VM::vec3(static_cast<GLfloat>(rand()) / RAND_MAX,
 						static_cast<GLfloat>(rand()) / RAND_MAX,
 						static_cast<GLfloat>(rand()) / RAND_MAX));	
@@ -69,17 +68,26 @@ void LightsArray::step()
 		counter = 0;
 		stepNumber = (stepNumber + 1) % wpSize;
 	}
+	#ifdef GRAPHICALCONTROLLER_M_DEBUG_SUPER
+	std::cout << "Lights positions:" << std::endl;
+	for (unsigned int i = 0; i < quantity; i++)
+	{
+		std::cout << '{' << position[i].x << ' ' << position[i].y
+				  << ' ' << position[i].z << '}';
+	}
+	std::cout << std::endl;
+	#endif
 }
 
-const unsigned int Sphere::DIVISION_FIRST = 40;
-const unsigned int Sphere::DIVISION_SECOND = 20;
+const unsigned int Sphere::DIVISION_FIRST = 20;
+const unsigned int Sphere::DIVISION_SECOND = 10;
 
 void Sphere::createLine(double first, double second, double offset)
 {
-	for (unsigned int i = 0; i < DIVISION_SECOND; i++)
+	double halfStep = M_PI / DIVISION_SECOND;
+	for (unsigned int i = 0; i <= DIVISION_SECOND; i++)
 	{
 		double angle = i * M_PI * 2 / DIVISION_SECOND + offset;
-		double halfStep = M_PI / DIVISION_SECOND / 2;
 		aiVector3D vertexOne(cos(angle) * cos(first),
 							 sin(first),
 							 sin(angle) * cos(first));
@@ -92,11 +100,16 @@ void Sphere::createLine(double first, double second, double offset)
 	}
 }
 
+void Sphere::postprocess()
+{
+
+}
+
 Sphere::Sphere()
 {
-	const double halfStep = M_PI / DIVISION_SECOND / 2;
+	const double halfStep = M_PI / DIVISION_SECOND;
 	double offset = halfStep;
-	for (unsigned int i = 0; i < DIVISION_FIRST; i++)
+	for (unsigned int i = 0; i <  DIVISION_FIRST; i++)
 	{
 		if (offset != 0)
 			offset = 0;
@@ -104,8 +117,20 @@ Sphere::Sphere()
 			offset = halfStep;
 			
 		createLine(-M_PI / 2 + (M_PI / DIVISION_FIRST) * i,
-				   -M_PI / 2 + (M_PI / DIVISION_SECOND) * (i + 1), offset);
+				   -M_PI / 2 + (M_PI / DIVISION_FIRST) * (i + 1), offset);
 	}
+	/*
+	for (unsigned int i = DIVISION_FIRST / 2; i < DIVISION_FIRST; i++)
+	{
+		if (offset != 0)
+			offset = 0;
+		else
+			offset = halfStep;
+			
+		createLine(-M_PI / 2 + (M_PI / DIVISION_FIRST) * (i + 1),
+				   -M_PI / 2 + (M_PI / DIVISION_FIRST) * i, offset);
+	}
+	postprocess();*/
 }
 
 const std::vector<aiVector3D>* Sphere::getMesh()
@@ -344,14 +369,25 @@ void GraphicalController::updateFPS()
 
 void GraphicalController::drawLights()
 {
-	
+	glUseProgram(sphereShader_); CHECK_GL_ERRORS
+	glBindVertexArray(lights_.VAO); CHECK_GL_ERRORS
+	GLint cameraLocation =
+		glGetUniformLocation(sphereShader_, "camera"); CHECK_GL_ERRORS
+	GLint cameraPosLocation = 
+		glGetUniformLocation(sphereShader_, "cameraPosition"); CHECK_GL_ERRORS
+	glUniformMatrix4fv(cameraLocation, 1, GL_TRUE,
+		camera_.getMatrix().data().data()); CHECK_GL_ERRORS
+	GLfloat camPos[3] = {camera_.position.x, camera_.position.y,
+						 camera_.position.z};
+	glUniform3fv(cameraPosLocation, 1, camPos);
+	glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, sphereMeshSize_,
+						  lights_.quantity); CHECK_GL_ERRORS
+	glBindVertexArray(0);
+	glUseProgram(0);
 }
 
 void GraphicalController::drawSponza()
 {
-	glEnable(GL_DEPTH_TEST); CHECK_GL_ERRORS
-	glEnable(GL_CULL_FACE);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); CHECK_GL_ERRORS
 	updateFPS();
 	GLint cameraLocationOne =
 		glGetUniformLocation(sponzaShaderOne_, "camera"); CHECK_GL_ERRORS
@@ -414,14 +450,27 @@ void GraphicalController::drawSponza()
 
 void GraphicalController::updateLights()
 {
-	
+	lights_.step();
+	glBindVertexArray(lights_.VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, lights_.positionBuffer);
+	glBufferData(GL_ARRAY_BUFFER,
+				 sizeof(VM::vec3) * lights_.position.size(),
+				 lights_.position.data(), GL_DYNAMIC_DRAW);
+		CHECK_GL_ERRORS
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
 }
 
 void GraphicalController::display()
 {
-	updateLights();
+	glEnable(GL_DEPTH_TEST); CHECK_GL_ERRORS
+	//glEnable(GL_CULL_FACE);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); CHECK_GL_ERRORS
+
 	drawLights();
 	drawSponza();
+	updateLights();
+
 	glutSwapBuffers(); CHECK_GL_ERRORS
 }
 
@@ -714,13 +763,59 @@ void GraphicalController::createLights()
 {
 	Sphere sphere;
 	const std::vector<aiVector3D>* mesh = sphere.getMesh();
+	sphereMeshSize_ = mesh->size();
 	lights_.create(10);
 	sphereShader_ = GL::CompileShaderProgram("sphere");
 	glGenVertexArrays(1, &lights_.VAO);
-	glBindVertexArray(&lights_.VAO);
+	glBindVertexArray(lights_.VAO);
 
 	GLuint meshBuffer;
 	glGenBuffers(1, &meshBuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, &meshBuffer);
-	glBufferData()
+	glBindBuffer(GL_ARRAY_BUFFER, meshBuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(aiVector3D) * mesh->size(),
+				 mesh->data(), GL_STATIC_DRAW); CHECK_GL_ERRORS
+	GLuint meshLocation = glGetAttribLocation(sphereShader_, "point");
+		CHECK_GL_ERRORS
+	glEnableVertexAttribArray(meshLocation);
+		CHECK_GL_ERRORS
+	glVertexAttribPointer(meshLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		CHECK_GL_ERRORS
+
+	glGenBuffers(1, &lights_.positionBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, lights_.positionBuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(VM::vec3) * lights_.position.size(),
+				 lights_.position.data(), GL_DYNAMIC_DRAW); CHECK_GL_ERRORS
+	GLuint positionsLocation = glGetAttribLocation(sphereShader_, "position");
+		CHECK_GL_ERRORS
+	glEnableVertexAttribArray(positionsLocation); CHECK_GL_ERRORS
+	glVertexAttribPointer(positionsLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		CHECK_GL_ERRORS
+	glVertexAttribDivisor(positionsLocation, 1);
+
+	glGenBuffers(1, &lights_.radiusBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, lights_.radiusBuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * lights_.radius.size(),
+				 lights_.radius.data(), GL_STATIC_DRAW);
+		CHECK_GL_ERRORS
+	GLuint radiusLocation = glGetAttribLocation(sphereShader_, "radius");
+		CHECK_GL_ERRORS
+	glEnableVertexAttribArray(radiusLocation); CHECK_GL_ERRORS
+	glVertexAttribPointer(radiusLocation, 1, GL_FLOAT, GL_FALSE, 0, 0);
+		CHECK_GL_ERRORS
+	glVertexAttribDivisor(radiusLocation, 1);
+
+	glGenBuffers(1, &lights_.colorBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, lights_.colorBuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(VM::vec3) * lights_.color.size(),
+				 lights_.color.data(), GL_STATIC_DRAW);
+		CHECK_GL_ERRORS
+	GLuint colorLocation = glGetAttribLocation(sphereShader_, "color");
+		CHECK_GL_ERRORS
+	glEnableVertexAttribArray(colorLocation); CHECK_GL_ERRORS
+	glVertexAttribPointer(colorLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		CHECK_GL_ERRORS
+	glVertexAttribDivisor(colorLocation, 1);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
 }
