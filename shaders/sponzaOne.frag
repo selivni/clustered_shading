@@ -37,9 +37,7 @@ void main()
 	vec4 specColor;
 	vec3 normal = normalize(norm);
 	vec3 camVec = normalize(cameraVector);
-	vec3 bissect = normalize((lightDir + camVec) / abs(lightDir + camVec));
-	const float specPower = 10.0;
-
+	const float specPower = 50.0;
 	vec2 TexCoord = vec2(uv.x,1 - uv.y) + vec2(norm) - vec2(norm);
 	if (material == uint(0))
 		diffColor = texture(Tex0, TexCoord);
@@ -78,17 +76,39 @@ void main()
 	else
 		diffColor = vec4(1, 0, 0, 1);
 
-	specColor = (diffColor + vec4(1, 1, 1, 1)) / 2;
-	uint i;
-	vec3 colorSum = vec3(0, 0, 0);
-	for (i = 0; i < 10, i++)
+	int i;
+	vec3 lightSum = vec3(0, 0, 0);
+	float aC = 0.1;
+	float aL = 0.01;
+	float aD = 0.001;
+	for (i = 0; i < 10; i++)
 	{
-		if (length(pointVector - lightsPositions[i]))
-		vec3 lightDir = normalize(pointVector - lightsPositions[i]);
-		vec3 bissect = normalize((lighttDir + camVec) / abs(lightDir + camVec));
-
+		float d;
+		if ((d = length(pointPosition - lightsPositions[i])) < 1000)
+		{
+			vec3 lightDir = normalize(lightsPositions[i] - pointPosition);
+			vec3 bissect = normalize(
+				(lightDir + camVec) / abs(lightDir + camVec));
+			float bisnor = dot(bissect, normal);
+			bisnor *= bisnor;
+			float norLight = dot(normal, lightDir);
+			specColor = (diffColor + vec4(lightsColors[i], 1)) / 2;
+			vec3 diff = vec3(diffColor) * lightsColors[i] * norLight
+				   * lightsPowers[i] / (aC + d * aL + d*d * aD);
+			vec3 spec = vec3(specColor) *
+					exp(-specPower * (1.0 - bisnor) / bisnor);
+			lightSum += diff + spec;
+		}
 	}
-	
+	if (lightSum.x < 0.1 && lightSum.y < 0.1 && lightSum.z < 0.1)
+		lightSum = vec3(diffColor * 0.1);
+	if (lightSum.x > 1)
+		lightSum.x = 1;
+	if (lightSum.y > 1)
+		lightSum.y = 1;
+	if (lightSum.z > 1)
+		lightSum.z = 1;
+	outColor = vec4(lightSum, 1);
 /*	
 	float bisnor = dot(bissect, normal);
 	bisnor *= bisnor;
