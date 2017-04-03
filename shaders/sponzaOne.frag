@@ -3,8 +3,13 @@
 in vec3 uv;
 in vec3 norm;
 in vec3 cameraVector;
+in vec3 pointPosition;
 
 uniform uint material;
+
+uniform vec3 lightsPositions[10];
+uniform vec3 lightsColors[10];
+uniform float lightsPowers[10];
 
 uniform sampler2D Tex0;
 uniform sampler2D Tex1;
@@ -31,7 +36,6 @@ void main()
 	vec4 diffColor;
 	vec4 specColor;
 	vec3 normal = normalize(norm);
-	vec3 lightDir = normalize(vec3(1, 1, 1));
 	vec3 camVec = normalize(cameraVector);
 	vec3 bissect = normalize((lightDir + camVec) / abs(lightDir + camVec));
 	const float specPower = 10.0;
@@ -73,7 +77,19 @@ void main()
 		diffColor = texture(Tex13, TexCoord);
 	else
 		diffColor = vec4(1, 0, 0, 1);
+
 	specColor = (diffColor + vec4(1, 1, 1, 1)) / 2;
+	uint i;
+	vec3 colorSum = vec3(0, 0, 0);
+	for (i = 0; i < 10, i++)
+	{
+		if (length(pointVector - lightsPositions[i]))
+		vec3 lightDir = normalize(pointVector - lightsPositions[i]);
+		vec3 bissect = normalize((lighttDir + camVec) / abs(lightDir + camVec));
+
+	}
+	
+/*	
 	float bisnor = dot(bissect, normal);
 	bisnor *= bisnor;
 	float norlight = dot(normal, lightDir);
@@ -89,4 +105,5 @@ void main()
 	}
 //	vec4 spec = specColor * pow(max(dot(normal, bissect), 0.0), specPower);
 	outColor = vec4(vec3(diff+spec), 1);
+*/
 }

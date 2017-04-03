@@ -10,8 +10,15 @@ void main()
 {
 	vec3 norm = normalize(normal);
 	vec3 camVec = normalize(cameraDirection);
-	const float specPower = 5.0;
-	vec4 diffColor = vec4(col, 1);
-	vec4 specColor = vec4(vec3(1, 1, 1) * pow(max(dot(norm, camVec), 0), specPower), 1);
-	outColor = vec4(vec3(normalize(diffColor + specColor)), 1);
+	const float specPower = 1.5;
+	vec3 diffColor = col;
+	vec3 specColor = vec3(1, 1, 1) * pow(max(dot(norm, camVec), 0), specPower);
+	vec3 result = diffColor + specColor;
+	if (result.x > 1)
+		result.x = 1;
+	if (result.y > 1)
+		result.y = 1;
+	if (result.z > 1)
+		result.z = 1;
+	outColor = vec4(result, 1);
 }

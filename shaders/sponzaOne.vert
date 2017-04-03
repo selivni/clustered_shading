@@ -10,10 +10,12 @@ uniform vec3 cameraPosition;
 out vec3 uv;
 out vec3 norm;
 out vec3 cameraVector;
+out vec3 pointPosition;
 
 void main()
 {
 	vec4 finalPoint = vec4(point, 1);
+	pointPosition = point;
 	norm = normal;
 	uv = uvCoord;
 	cameraVector = cameraPosition - point;

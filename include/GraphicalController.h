@@ -5,6 +5,7 @@
 #undef GRAPHICALCONTROLLER_M_DEBUG_SUPER
 
 #include <stdlib.h>
+//#include <unistd.h>
 #include <iostream>
 #include <vector>
 #include <list>
@@ -27,8 +28,10 @@ typedef std::pair<GLuint[2], VAOs> MaterialInfo;
 struct LightsArray
 {
 	static const VM::vec3 waypoint[];
-	static const int wpSize;
+	static const unsigned int wpSize;
 	static const unsigned int FRAMES;
+
+	static const unsigned int SPHERES_COUNT;
 
 	LightsArray();
 	GLuint VAO;
@@ -40,9 +43,10 @@ struct LightsArray
 	std::vector<GLfloat> radius;
 	std::vector<VM::vec3> color;
 	void step();
-	void create(unsigned int);
+	void create();
 private:
 	unsigned int counter;
+	unsigned int multiplier;
 	unsigned int stepNumber;
 };
 
@@ -105,6 +109,7 @@ private:
 
 	LightsArray lights_;
 	void updateLights();
+	void passLights(GLuint);
 
 	void createCamera();
 	void updateFPS();
