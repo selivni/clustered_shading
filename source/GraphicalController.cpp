@@ -1,7 +1,7 @@
 #include "GraphicalController.h"
 #include "PointerGraphicalController.h"
 
-const unsigned int LightsArray::FRAMES = 16;
+const unsigned int LightsArray::FRAMES = 4;
 const unsigned int LightsArray::SPHERES_COUNT = 10;
 
 const unsigned int Sphere::DIVISION_FIRST = 40;
