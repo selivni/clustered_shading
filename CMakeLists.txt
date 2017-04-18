@@ -17,10 +17,16 @@ execute_process(COMMAND ${CMAKE_COMMAND} ..
 				WORKING_DIRECTORY "${SOIL_ROOT}/build")
 execute_process(COMMAND "make"
 				WORKING_DIRECTORY "${SOIL_ROOT}/build")
+
 execute_process(COMMAND ${CMAKE_COMMAND} ..
 				WORKING_DIRECTORY "${UTILITY_ROOT}/build")
 execute_process(COMMAND "make"
 				WORKING_DIRECTORY "${UTILITY_ROOT}/build")
+
+execute_process(COMMAND ${CMAKE_COMMAND} ..
+				WORKING_DIRECTORY "${ASSIMP_ROOT}/build")
+execute_process(COMMAND "make"
+				WORKING_DIRECTORY "${ASSIMP_ROOT}/build")
 
 link_directories(${ASSIMP_ROOT})
 file (GLOB SOURCES "${SOURCE_ROOT}/*.cpp")
@@ -28,6 +34,8 @@ file (GLOB UTILITY_LIBRARIES
 	"${UTILITY_ROOT}/build/CMakeFiles/UtilityLib.dir/src/*.o*")
 file (GLOB SOIL_LIBRARIES
 	"${SOIL_ROOT}/build/CMakeFiles/SOILLib.dir/src/*.o*")
+file (GLOB ASSIMP_LIBRARIES
+	"${ASSIMP_ROOT}/build/code/*.so*" "${ASSIMP_ROOT}/build/code/*.dll*")
 
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -g -std=c++11")
 add_definitions(-DSPONZA_OBJ="${MODEL_ROOT}/sponza.obj")
@@ -44,7 +52,7 @@ find_package(GLUT REQUIRED)
 find_package(OpenGL REQUIRED)
 
 include_directories(${INCLUDE_ROOT} 
-					"${ASSIMP_ROOT}/include"
+					"${ASSIMP_ROOT}/include/assimp"
 					"${UTILITY_ROOT}/include"
 					"${UTILITY_ROOT}/include/GL"
 					"${UTILITY_ROOT}/include/VM"
@@ -53,7 +61,7 @@ include_directories(${INCLUDE_ROOT}
 					${GLUT_INCLUDE_DIR}
 					${OPENGL_INCLUDE_DIR})
 
-target_link_libraries(${PROJECT_NAME} "${ASSIMP_ROOT}/libassimp.so")
+target_link_libraries(${PROJECT_NAME} ${ASSIMP_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} ${UTILITY_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} ${SOIL_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} ${GLEW_LIBRARIES})
