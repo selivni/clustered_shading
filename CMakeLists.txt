@@ -13,16 +13,24 @@ set (MODEL_ROOT "${PROJECT_SOURCE_DIR}/model")
 set (UTILITY_ROOT "${PROJECT_SOURCE_DIR}/lib/Utility")
 set (SOIL_ROOT "${PROJECT_SOURCE_DIR}/lib/SOIL")
 
+if (NOT EXISTS "${SOIL_ROOT}/build")
+file(MAKE_DIRECTORY "${SOIL_ROOT}/build")
+endif()
 execute_process(COMMAND ${CMAKE_COMMAND} ..
 				WORKING_DIRECTORY "${SOIL_ROOT}/build")
 execute_process(COMMAND "make"
 				WORKING_DIRECTORY "${SOIL_ROOT}/build")
 
+if (NOT EXISTS "${UTILITY_ROOT}/build")
+file(MAKE_DIRECTORY "${UTILITY_ROOT}/build")
+endif()
 execute_process(COMMAND ${CMAKE_COMMAND} ..
 				WORKING_DIRECTORY "${UTILITY_ROOT}/build")
 execute_process(COMMAND "make"
 				WORKING_DIRECTORY "${UTILITY_ROOT}/build")
-
+if (NOT EXISTS "${ASSIMP_ROOT}/build")
+file(MAKE_DIRECTORY "${ASSIMP_ROOT}/build")
+endif()
 execute_process(COMMAND ${CMAKE_COMMAND} ..
 				WORKING_DIRECTORY "${ASSIMP_ROOT}/build")
 execute_process(COMMAND "make"
