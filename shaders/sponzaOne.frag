@@ -1,8 +1,15 @@
 #version 330 core
 
 in vec3 uv;
+in vec3 norm;
+in vec3 cameraVector;
+in vec3 pointPosition;
 
 uniform uint material;
+
+uniform vec3 lightsPositions[10];
+uniform vec3 lightsColors[10];
+uniform float lightsPowers[10];
 
 uniform sampler2D Tex0;
 uniform sampler2D Tex1;
@@ -26,52 +33,97 @@ out vec4 outColor;
 
 void main()
 {
-	vec2 TexCoord = vec2(uv.x,1 - uv.y);
-	mat4 minimalLight = mat4(0);
-	minimalLight[0][0] = 0.35;
-	minimalLight[1][1] = 0.35;
-	minimalLight[2][2] = 0.35;
-	minimalLight[3][3] = 1;
+	vec4 diffColor;
+	vec4 specColor;
+	vec3 normal = normalize(norm);
+	vec3 camVec = normalize(cameraVector);
+	const float specPower = 50.0;
+	vec2 TexCoord = vec2(uv.x,1 - uv.y) + vec2(norm) - vec2(norm);
 	if (material == uint(0))
-		outColor = texture(Tex0, TexCoord);
+		diffColor = texture(Tex0, TexCoord);
 	else if (material == uint(1))
 	{
-		vec4 preColor = minimalLight * texture(Tex1, TexCoord);
+		vec4 preColor = texture(Tex1, TexCoord);
 		preColor.a *= texture(Opac0, TexCoord).y;
 		if (preColor.a < 0.5)
 			discard;
-		outColor = preColor;
+		diffColor = preColor;
 	}
 	else if (material == uint(2))
-		outColor = minimalLight * texture(Tex2, TexCoord);
+		diffColor = texture(Tex2, TexCoord);
 	else if (material == uint(3))
-	{
-		vec4 preColor = minimalLight * texture(Tex3, TexCoord);
-		preColor.a *= texture(Opac1, TexCoord).y;
-//		if (preColor.a < 0.0001)
 			discard;
-		outColor = preColor;
-	}
 	else if (material == uint(4))
-		outColor = minimalLight * texture(Tex4, TexCoord);
+		diffColor = texture(Tex4, TexCoord);
 	else if (material == uint(5))
-		outColor = minimalLight * texture(Tex5, TexCoord);
+		diffColor = texture(Tex5, TexCoord);
 	else if (material == uint(6))
-		outColor = minimalLight * texture(Tex6, TexCoord);
+		diffColor = texture(Tex6, TexCoord);
 	else if (material == uint(7))
-		outColor = minimalLight * texture(Tex7, TexCoord);
+		diffColor = texture(Tex7, TexCoord);
 	else if (material == uint(8))
-		outColor = minimalLight * texture(Tex8, TexCoord);
+		diffColor = texture(Tex8, TexCoord);
 	else if (material == uint(9))
-		outColor = minimalLight * texture(Tex9, TexCoord);
+		diffColor = texture(Tex9, TexCoord);
 	else if (material == uint(10))
-		outColor = minimalLight * texture(Tex10, TexCoord);
+		diffColor = texture(Tex10, TexCoord);
 	else if (material == uint(11))
-		outColor = minimalLight * texture(Tex11, TexCoord);
+		diffColor = texture(Tex11, TexCoord);
 	else if (material == uint(12))
-		outColor = minimalLight * texture(Tex12, TexCoord);
+		diffColor = texture(Tex12, TexCoord);
 	else if (material == uint(13))
-		outColor = minimalLight * texture(Tex13, TexCoord);
+		diffColor = texture(Tex13, TexCoord);
 	else
-		outColor = vec4(1, 0, 0, 1);
+		diffColor = vec4(1, 0, 0, 1);
+
+	int i;
+	vec3 lightSum = vec3(0, 0, 0);
+	float aC = 0.1;
+	float aL = 0.01;
+	float aD = 0.001;
+	for (i = 0; i < 10; i++)
+	{
+		float d;
+		if ((d = length(pointPosition - lightsPositions[i])) < 1000)
+		{
+			vec3 lightDir = normalize(lightsPositions[i] - pointPosition);
+			vec3 bissect = normalize(
+				(lightDir + camVec) / abs(lightDir + camVec));
+			float bisnor = dot(bissect, normal);
+			bisnor *= bisnor;
+			float norLight = dot(normal, lightDir);
+			specColor = (diffColor + vec4(lightsColors[i], 1)) / 2;
+			vec3 diff = vec3(diffColor) * lightsColors[i] * norLight
+				   * lightsPowers[i] / (aC + d * aL + d*d * aD);
+			vec3 spec = vec3(specColor) *
+					exp(-specPower * (1.0 - bisnor) / bisnor);
+			lightSum += diff + spec;
+		}
+	}
+	if (lightSum.x < 0.1 && lightSum.y < 0.1 && lightSum.z < 0.1)
+		lightSum = vec3(diffColor * 0.1);
+	if (lightSum.x > 1)
+		lightSum.x = 1;
+	if (lightSum.y > 1)
+		lightSum.y = 1;
+	if (lightSum.z > 1)
+		lightSum.z = 1;
+	outColor = vec4(lightSum, 1);
+/*	
+	float bisnor = dot(bissect, normal);
+	bisnor *= bisnor;
+	float norlight = dot(normal, lightDir);
+	vec4 diff, spec;
+	if (norlight > 0.15)
+	{
+		diff = diffColor * norlight;
+		spec = specColor * exp(-specPower * (1.0 - bisnor) / bisnor);
+	} else
+	{
+		diff = diffColor * 0.15;
+		spec = specColor * 0;
+	}
+//	vec4 spec = specColor * pow(max(dot(normal, bissect), 0.0), specPower);
+	outColor = vec4(vec3(diff+spec), 1);
+*/
 }
