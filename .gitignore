@@ -2,4 +2,5 @@ build/
 CMakeFiles/
 CMakeCache.txt
 **/*.swp
+**/*.o*
 **/TODO
