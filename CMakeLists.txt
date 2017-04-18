@@ -2,6 +2,7 @@ cmake_minimum_required (VERSION 2.6)
 
 project (clustered_shading)
 
+
 set (CMAKE_BINARY_DIR "${PROJECT_SOURCE_DIR}/build")
 
 set (SOURCE_ROOT "${PROJECT_SOURCE_DIR}/source")
@@ -9,16 +10,24 @@ set (INCLUDE_ROOT "${PROJECT_SOURCE_DIR}/include")
 set (SO_ROOT "${PROJECT_SOURCE_DIR}/shared")
 set (ASSIMP_ROOT "${SO_ROOT}/assimp")
 set (MODEL_ROOT "${PROJECT_SOURCE_DIR}/model")
-set (GLM_ROOT "${PROJECT_SOURCE_DIR}/lib/glm")
 set (UTILITY_ROOT "${PROJECT_SOURCE_DIR}/lib/Utility")
 set (SOIL_ROOT "${PROJECT_SOURCE_DIR}/lib/SOIL")
+
+execute_process(COMMAND ${CMAKE_COMMAND} ..
+				WORKING_DIRECTORY "${SOIL_ROOT}/build")
+execute_process(COMMAND "make"
+				WORKING_DIRECTORY "${SOIL_ROOT}/build")
+execute_process(COMMAND ${CMAKE_COMMAND} ..
+				WORKING_DIRECTORY "${UTILITY_ROOT}/build")
+execute_process(COMMAND "make"
+				WORKING_DIRECTORY "${UTILITY_ROOT}/build")
 
 link_directories(${ASSIMP_ROOT})
 file (GLOB SOURCES "${SOURCE_ROOT}/*.cpp")
 file (GLOB UTILITY_LIBRARIES
-	"${UTILITY_ROOT}/CMakeFiles/UtilityLib.dir/src/*.o*")
+	"${UTILITY_ROOT}/build/CMakeFiles/UtilityLib.dir/src/*.o*")
 file (GLOB SOIL_LIBRARIES
-	"${SOIL_ROOT}/CMakeFiles/SOILLib.dir/src/*.o*")
+	"${SOIL_ROOT}/build/CMakeFiles/SOILLib.dir/src/*.o*")
 
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -g -std=c++11")
 add_definitions(-DSPONZA_OBJ="${MODEL_ROOT}/sponza.obj")
@@ -50,7 +59,4 @@ target_link_libraries(${PROJECT_NAME} ${SOIL_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} ${GLEW_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} ${GLUT_glut_LIBRARY})
 target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES})
-
-add_subdirectory("lib/SOIL" "lib/SOIL/build")
-add_subdirectory("lib/Utility" "lib/Utility/build")
 
