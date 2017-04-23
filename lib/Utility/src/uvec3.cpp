@@ -67,7 +67,7 @@ const uint& uvec3::operator[](const uint index) const {
 }
 
 bool uvec3::operator==(const uvec3 &v) const {
-    return std::abs(x - v.x) < VEC_EPS && std::abs(y - v.y) < VEC_EPS && std::abs(z - v.z) < VEC_EPS;
+    return std::abs(static_cast<int>(x - v.x)) < VEC_EPS && std::abs(static_cast<int>(y - v.y)) < VEC_EPS && std::abs(static_cast<int>(z - v.z)) < VEC_EPS;
 }
 
 std::ostream& operator<<(std::ostream& os, const uvec3& v)

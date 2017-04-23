@@ -2,6 +2,7 @@
 #define VEC3_H
 
 #include <iostream>
+#include <math.h>
 
 #include "Overall.h"
 

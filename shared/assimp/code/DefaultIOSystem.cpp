@@ -139,7 +139,7 @@ inline void MakeAbsolutePath (const char* in, char* _out)
     ret = ::_fullpath( _out, in, PATHLIMIT );
 #else
     // use realpath
-    ret = realpath(in, _out);
+//  ret = realpath(in, _out);
 #endif
     if(!ret) {
         // preserve the input path, maybe someone else is able to fix

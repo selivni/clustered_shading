@@ -31,7 +31,7 @@ execute_process(COMMAND "make"
 if (NOT EXISTS "${ASSIMP_ROOT}/build")
 file(MAKE_DIRECTORY "${ASSIMP_ROOT}/build")
 endif()
-execute_process(COMMAND ${CMAKE_COMMAND} ..
+execute_process(COMMAND ${CMAKE_COMMAND} .. -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++
 				WORKING_DIRECTORY "${ASSIMP_ROOT}/build")
 execute_process(COMMAND "make"
 				WORKING_DIRECTORY "${ASSIMP_ROOT}/build")

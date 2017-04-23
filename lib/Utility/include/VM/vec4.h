@@ -2,6 +2,7 @@
 #define VEC4_H
 
 #include "vec3.h"
+#include <math.h>
 
 namespace VM {
 

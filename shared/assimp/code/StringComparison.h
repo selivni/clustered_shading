@@ -57,6 +57,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdint.h>
 #include <string>
 #include <cctype>
+#include <strings.h>
 
 namespace Assimp    {
 
